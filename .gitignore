@@ -3,3 +3,5 @@ MANIFEST
 build/
 dist/
 parkworker3/settings.py
+virt_env/
+django_park_worker_p3.egg-info

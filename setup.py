@@ -10,6 +10,6 @@ setup(
     packages=['parkworker3',],
     license='The MIT License',
     install_requires=[
-        'pyzmq', 'pytz',
+        'park-worker-base', 'pyzmq', 'pytz',
     ],
 )

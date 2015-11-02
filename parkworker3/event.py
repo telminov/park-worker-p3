@@ -1,5 +1,5 @@
 # coding: utf-8
-from parkworker3 import settings
+from . import settings
 import zmq
 
 

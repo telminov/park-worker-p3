@@ -1,7 +1,7 @@
 # coding: utf-8
 import subprocess
 
-from parkworker3.monits.base import Monit, CheckResult
+from parkworker.monits.base import Monit, CheckResult
 
 
 class PingMonit(Monit):
