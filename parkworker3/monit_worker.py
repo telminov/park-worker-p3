@@ -89,11 +89,13 @@ class MonitWorker(multiprocessing.Process):
         task_id = self._get_task_id(task)
         self.tasks[task_id] = task
         emit_event(const.MONIT_WORKER_EVENT, self._get_worker_json())
+        # print('_add_current_task', self._get_worker_json())
 
     def _rm_current_task(self, task):
         task_id = self._get_task_id(task)
         del self.tasks[task_id]
         emit_event(const.MONIT_WORKER_EVENT, self._get_worker_json())
+        # print('_rm_current_task', self._get_worker_json())
 
     def _get_worker(self):
         return {
