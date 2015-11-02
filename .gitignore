@@ -1,0 +1,5 @@
+.idea
+MANIFEST
+build/
+dist/
+parkworker3/settings.py
