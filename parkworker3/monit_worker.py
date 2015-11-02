@@ -18,10 +18,7 @@ class MonitWorker(multiprocessing.Process):
     uuid = None
     created_dt = None
     host_name = None
-    current_worker = None
-    delete_dt = None
     tasks = None
-    monit_names = None
 
     def setup(self, worker_id=None):
         if worker_id is None:
@@ -33,9 +30,9 @@ class MonitWorker(multiprocessing.Process):
         self.created_dt = now()
         self.host_name = socket.gethostname()
         self.tasks = dict()
-        self.monit_names = [n for n, _ in Monit.get_all_monits()]
 
-        emit_event(const.MONIT_WORKER_EVENT, self._get_worker_json())
+        monit_names = [n for n, _ in Monit.get_all_monits()]
+        self._emit_worker({'monit_names': monit_names})
 
     def run(self):
         context = zmq.Context()
@@ -70,8 +67,7 @@ class MonitWorker(multiprocessing.Process):
                 # get new monitoring results
                 emit_event(const.MONIT_STATUS_EVENT, json.dumps(task, default=json_default))
         finally:
-            self.delete_dt = now()
-            emit_event(const.MONIT_WORKER_EVENT, self._get_worker_json())
+            self._emit_worker({'stop_dt': now()})
 
     def _register_start_task(self, task):
         self._add_current_task(task)
@@ -81,36 +77,39 @@ class MonitWorker(multiprocessing.Process):
         emit_event(const.MONIT_TASK_EVENT, json.dumps(task, default=json_default))
 
     def _register_complete_task(self, task, result):
-            self._rm_current_task(task)
-            task['result'] = result.get_dict()
-            emit_event(const.MONIT_TASK_EVENT, json.dumps(task, default=json_default))
+        self._rm_current_task(task)
+        task['result'] = result.get_dict()
+        emit_event(const.MONIT_TASK_EVENT, json.dumps(task, default=json_default))
 
     def _add_current_task(self, task):
         task_id = self._get_task_id(task)
         self.tasks[task_id] = task
-        emit_event(const.MONIT_WORKER_EVENT, self._get_worker_json())
-        # print('_add_current_task', self._get_worker_json())
+        self._emit_worker({'tasks': list(self.tasks.keys())})
 
     def _rm_current_task(self, task):
         task_id = self._get_task_id(task)
         del self.tasks[task_id]
-        emit_event(const.MONIT_WORKER_EVENT, self._get_worker_json())
-        # print('_rm_current_task', self._get_worker_json())
+        self._emit_worker({'tasks': list(self.tasks.keys())})
 
     def _get_worker(self):
         return {
-            'id': self.id,
+            'id': str(self.id),
             'uuid': self.uuid,
             'created_dt': self.created_dt,
             'host_name': self.host_name,
-            'delete_dt': self.delete_dt,
-            'tasks': list(self.tasks.keys()),
-            'monit_names': self.monit_names,
         }
 
-    def _get_worker_json(self):
-        worker_data = self._get_worker()
-        return json.dumps(worker_data, default=json_default)
+    def _emit_worker(self, data: dict = None):
+        worker_data = {
+            'main': self._get_worker(),
+            'heart_beat_dt': now(),
+        }
+
+        if data:
+            worker_data.update(data)
+
+        worker_data_json = json.dumps(worker_data, default=json_default)
+        emit_event(const.MONIT_WORKER_EVENT, worker_data_json)
 
     @staticmethod
     def _get_task_id(task):
