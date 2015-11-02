@@ -1,4 +1,5 @@
 # coding: utf-8
+import time
 import json
 import multiprocessing
 import socket
@@ -6,13 +7,13 @@ import uuid
 import zmq
 
 from parkworker3 import settings
+from parkworker3.const import MONIT_WORKER_HEART_BEAT_PERIOD
 from parkworker3.event import emit_event
 from parkworker3.monits.base import Monit
 from parkworker3.utils import now, json_default
 from parkworker3 import const
 
 
-# TODO: add worker status publishing (heart beat)
 class MonitWorker(multiprocessing.Process):
     id = None
     uuid = None
@@ -41,6 +42,10 @@ class MonitWorker(multiprocessing.Process):
         task_socket.connect("tcp://%s:%s" % (settings.ZMQ_SERVER_ADDRESS, settings.ZMQ_MONIT_SCHEDULER_PORT))
 
         print('Worker start %s' % self.id)
+
+        heart_beat_process = multiprocessing.Process(target=self._heart_beat)
+        heart_beat_process.daemon = True
+        heart_beat_process.start()
 
         try:
             while True:
@@ -110,6 +115,11 @@ class MonitWorker(multiprocessing.Process):
 
         worker_data_json = json.dumps(worker_data, default=json_default)
         emit_event(const.MONIT_WORKER_EVENT, worker_data_json)
+
+    def _heart_beat(self):
+        while True:
+            self._emit_worker()
+            time.sleep(MONIT_WORKER_HEART_BEAT_PERIOD)
 
     @staticmethod
     def _get_task_id(task):
