@@ -2,7 +2,7 @@
 import subprocess
 import asyncio
 import aiohttp
-
+from parkworker import const
 from parkworker.monits.base import CheckResult
 from parkworker3.monits.base import Monit
 
@@ -21,10 +21,14 @@ class PingMonit(Monit):
 
         await process.wait()
 
-        is_success = process.returncode == 0
+        if process.returncode == 0:
+            level = const.LEVEL_OK
+        else:
+            level = const.LEVEL_FAIL
+
         stdout = await process.stdout.read()
         check_result = CheckResult(
-            is_success=is_success,
+            level=level,
             extra={'stdout': stdout.decode('utf-8')},
         )
 
@@ -43,12 +47,12 @@ class HttpMonit(Monit):
         print('Start http', host, url)
 
         extra = {}
-        is_success = True
+        level = const.LEVEL_OK
         async with aiohttp.get(url) as response:
             extra['is_http_status_ok'] = response.status == kwargs.get('http_status', 200)
             if not extra['is_http_status_ok']:
                 extra['http_status'] = response.status
-                is_success = False
+                level = const.LEVEL_FAIL
 
             if kwargs.get('contains'):
                 content = await response.read()
@@ -56,10 +60,10 @@ class HttpMonit(Monit):
                 extra['is_contains_ok'] = kwargs['contains'] in content
                 if not extra['is_contains_ok']:
                     extra['content'] = content
-                    is_success = False
+                    level = const.LEVEL_FAIL
 
         check_result = CheckResult(
-            is_success=is_success,
+            level=level,
             extra=extra,
         )
 

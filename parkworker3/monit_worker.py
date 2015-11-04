@@ -53,4 +53,4 @@ class MonitWorker(BaseMonitWorker):
             **task['options']
         )
         self._after_check(task, result)
-        # print('Done check for host', task['host_address'])
+        # print('Done check for host', task)
