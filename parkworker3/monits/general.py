@@ -1,25 +1,28 @@
 # coding: utf-8
 import subprocess
+import asyncio
 
-from parkworker.monits.base import Monit, CheckResult
+from parkworker.monits.base import CheckResult
+from parkworker3.monits.base import Monit
 
 
 class PingMonit(Monit):
     name = 'general.ping'
     description = 'Ping host checking.'
 
-    def check(self, host, **kwargs):
-        result = subprocess.run(
-            ['ping', host, '-c1'],
+    async def async_check(self, host: str, **kwargs):
+        process = await asyncio.create_subprocess_exec(
+            'ping', host, '-c1',
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
         )
 
-        is_success = result.returncode == 0
-        stdout = result.stdout.decode('utf-8')
+        await process.wait()
 
+        is_success = process.returncode == 0
+        stdout = await process.stdout.read()
         check_result = CheckResult(
             is_success=is_success,
-            extra={'stdout': stdout},
+            extra={'stdout': stdout.decode('utf-8')},
         )
         return check_result
