@@ -15,11 +15,11 @@ def emit_event(topic_filter: str, msg: str = ''):
     socket.close()
 
 
-async def async_recv_pull_msg(subscriber_socket: zmq.Socket) -> str:
+async def async_recv_pull_msg(subscriber_socket: zmq.Socket) -> dict:
     while True:
         try:
-            msg = subscriber_socket.recv_json(flags=zmq.NOBLOCK)
-            return msg
+            data = subscriber_socket.recv_json(flags=zmq.NOBLOCK)
+            return data
         except zmq.error.Again:
             pass
         await asyncio.sleep(0.1)

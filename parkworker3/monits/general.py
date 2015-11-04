@@ -11,6 +11,7 @@ class PingMonit(Monit):
     description = 'Ping host checking.'
 
     async def async_check(self, host: str, **kwargs):
+        # print('Start ping', host)
         process = await asyncio.create_subprocess_exec(
             'ping', host, '-c1',
             stdout=subprocess.PIPE,
@@ -25,4 +26,8 @@ class PingMonit(Monit):
             is_success=is_success,
             extra={'stdout': stdout.decode('utf-8')},
         )
+
+        # import random
+        # await asyncio.sleep(random.randint(5, 10))
+        # print('End ping', host)
         return check_result
