@@ -43,10 +43,13 @@ class HttpMonit(Monit):
     description = 'Http checking.'
 
     async def async_check(self, host: str, **kwargs):
-        url = kwargs['url']
+        protocol = kwargs.get('protocol', 'http')
+        port = kwargs.get('port', '80')
+        path = kwargs.get('path', '/')
+        url = '%s://%s:%s%s' % (protocol, host, port, path)
         print('Start http', host, url)
 
-        extra = {}
+        extra = {'url': url}
         level = const.LEVEL_OK
         async with aiohttp.get(url) as response:
             extra['is_http_status_ok'] = response.status == kwargs.get('http_status', 200)
