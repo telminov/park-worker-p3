@@ -52,7 +52,7 @@ class MonitWorker(BaseMonitWorker):
             raise Exception('Unknown monit name "%s"' % task['monit_name'])
 
         monit = monit_class()
-        result = await monit.async_check(
+        result = await monit.async_start(
             host=task['host_address'],
             **task['options']
         )
