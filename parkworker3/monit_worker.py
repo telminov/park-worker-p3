@@ -47,7 +47,11 @@ class MonitWorker(BaseMonitWorker):
             await asyncio.sleep(MONIT_WORKER_HEART_BEAT_PERIOD)
 
     async def _check(self, task):
-        monit = Monit.get_monit(task['monit_name'])()
+        monit_class = Monit.get_monit(task['monit_name'])
+        if not monit_class:
+            raise Exception('Unknown monit name "%s"' % task['monit_name'])
+
+        monit = monit_class()
         result = await monit.async_check(
             host=task['host_address'],
             **task['options']
