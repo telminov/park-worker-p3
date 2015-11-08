@@ -40,7 +40,12 @@ class PingMonit(Monit):
 
 class HttpMonit(Monit):
     name = 'general.http'
-    description = 'Http checking.'
+    description = 'Http checking. Get options: \n' \
+                  ' - protocol. Default "http". \n' \
+                  ' - port. Default 80. \n' \
+                  ' - path. Default "/". \n' \
+                  ' - http_status. Default 200. \n' \
+                  ' - contains. Optional. If defined, returned content will be checked on containing text.'
 
     async def async_check(self, host: str, **kwargs):
         protocol = kwargs.get('protocol', 'http')
