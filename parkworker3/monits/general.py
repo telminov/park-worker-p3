@@ -40,7 +40,7 @@ class PingMonit(Monit):
 
 class HttpMonit(Monit):
     name = 'general.http'
-    description = 'Http checking. Get options: \n' \
+    description = 'Http checking. Options: \n' \
                   ' - protocol. Default "http". \n' \
                   ' - port. Default 80. \n' \
                   ' - path. Default "/". \n' \
