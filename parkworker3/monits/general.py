@@ -3,11 +3,11 @@ import subprocess
 import asyncio
 import aiohttp
 from parkworker import const
-from parkworker.monits.base import CheckResult
-from parkworker3.monits.base import Monit
+from parkworker.task_processor import TaskResult
+from parkworker.asyncio.monit import AsyncMonit
 
 
-class PingMonit(Monit):
+class PingMonit(AsyncMonit):
     name = 'general.ping'
     description = 'Ping host checking.'
 
@@ -27,7 +27,7 @@ class PingMonit(Monit):
             level = const.LEVEL_FAIL
 
         stdout = await process.stdout.read()
-        check_result = CheckResult(
+        check_result = TaskResult(
             level=level,
             extra={'stdout': stdout.decode('utf-8')},
         )
@@ -38,7 +38,7 @@ class PingMonit(Monit):
         return check_result
 
 
-class HttpMonit(Monit):
+class HttpMonit(AsyncMonit):
     name = 'general.http'
     description = 'Http checking. Options: \n' \
                   ' - protocol. Default "http". \n' \
@@ -70,7 +70,7 @@ class HttpMonit(Monit):
                     extra['content'] = content
                     level = const.LEVEL_FAIL
 
-        check_result = CheckResult(
+        check_result = TaskResult(
             level=level,
             extra=extra,
         )
