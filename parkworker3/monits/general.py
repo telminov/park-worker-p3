@@ -52,7 +52,7 @@ class HttpMonit(AsyncMonit):
         port = kwargs.get('port', '80')
         path = kwargs.get('path', '/')
         url = '%s://%s:%s%s' % (protocol, host, port, path)
-        print('Start http', host, url)
+        # print('Start http', host, url)
 
         extra = {'url': url}
         level = const.LEVEL_OK
